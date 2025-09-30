@@ -54,10 +54,15 @@ Created a lightweight ML API that can be integrated with web or mobile apps.
 
 ## 📦 iris-ml-end-to-end
  ┣ 📜 train.py          # Model training script
+ 
  ┣ 📜 app.py            # FastAPI app for deployment
+ 
  ┣ 📜 model.pkl         # Saved model
+ 
  ┣ 📜 requirements.txt  # Dependencies
+ 
  ┣ 📜 README.md         # Project documentation
+ 
  ┗ 📂 notebooks         # Jupyter notebooks for EDA
 
 ---

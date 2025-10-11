@@ -1,47 +1,49 @@
-from flask import Flask,request,render_template
+import streamlit as st
+import pickle
 import numpy as np
-import pandas as pd
 
-from sklearn.preprocessing import StandardScaler
-from src.pipeline.predict_pipeline import CustomData,PredictPipeline
+# -----------------------------
+# Load the trained model
+# -----------------------------
+with open("Classifier.pkl", "rb") as file:
+    model = pickle.load(file)
 
-application=Flask(__name__)
+# -----------------------------
+# Streamlit App UI
+# -----------------------------
+st.set_page_config(page_title="Iris Flower Classifier", layout="centered")
+st.title("🌸 Iris Flower Classifier")
+st.write("Enter the flower measurements and let the model predict the species.")
 
-app=application
+# Sidebar for inputs
+st.sidebar.header("Input Features")
 
-## Route for a home page
+def user_input_features():
+    sepal_length = st.sidebar.slider("Sepal Length (cm)", 4.0, 8.0, 5.4)
+    sepal_width  = st.sidebar.slider("Sepal Width (cm)", 2.0, 4.5, 3.4)
+    petal_length = st.sidebar.slider("Petal Length (cm)", 1.0, 7.0, 1.3)
+    petal_width  = st.sidebar.slider("Petal Width (cm)", 0.1, 2.5, 0.2)
 
-@app.route('/')
-def index():
-    return render_template('index.html') 
+    features = np.array([[sepal_length, sepal_width, petal_length, petal_width]])
+    return features
 
-@app.route('/predictdata',methods=['GET','POST'])
-def predict_datapoint():
-    if request.method=='GET':
-        return render_template('home.html')
-    else:
-        data=CustomData(
-            gender=request.form.get('gender'),
-            race_ethnicity=request.form.get('ethnicity'),
-            parental_level_of_education=request.form.get('parental_level_of_education'),
-            lunch=request.form.get('lunch'),
-            test_preparation_course=request.form.get('test_preparation_course'),
-            reading_score=float(request.form.get('writing_score')),
-            writing_score=float(request.form.get('reading_score'))
+features = user_input_features()
 
-        )
-        pred_df=data.get_data_as_data_frame()
-        print(pred_df)
-        print("Before Prediction")
+# -----------------------------
+# Prediction
+# -----------------------------
+prediction = model.predict(features)
+prediction_proba = model.predict_proba(features)
 
-        predict_pipeline=PredictPipeline()
-        print("Mid Prediction")
-        results=predict_pipeline.predict(pred_df)
-        print("after Prediction")
-        return render_template('home.html',results=results[0])
-    
+# -----------------------------
+# Output
+# -----------------------------
+species = ["Setosa", "Versicolor", "Virginica"]
 
-if __name__=="__main__":
-    app.run(host="0.0.0.0")        
+st.subheader("Prediction")
+st.success(f"The predicted species is: **{species[prediction[0]]}**")
 
-
+st.subheader("Prediction Probabilities")
+st.write(
+    {species[i]: f"{prediction_proba[0][i]*100:.2f}%" for i in range(len(species))}
+)
